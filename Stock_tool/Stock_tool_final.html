@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>📊 Pro Financial Tool</title>
+
+<style>
+
+:root{
+  --bg:#1f1f23;
+  --card:#26272b;
+  --border:#3a3b42;
+  --text:#f5f5f5;
+  --muted:#b7b7b7;
+  --panel:#2c2d32;
+}
+
+body.light{
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --border:#d7dce5;
+  --text:#111827;
+  --muted:#64748b;
+  --panel:#ffffff;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+}
+
+.container{
+  padding:32px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:30px;
+}
+
+.title{
+  font-size:2.2rem;
+  font-weight:bold;
+}
+
+.theme-btn{
+  border:none;
+  background:#005f8f;
+  color:white;
+  border-radius:16px;
+  padding:14px 22px;
+  cursor:pointer;
+}
+
+.main-card{
+  background:var(--card);
+  border-radius:24px;
+  padding:30px;
+  border:1px solid var(--border);
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:1fr 340px 340px;
+  gap:20px;
+}
+
+.search-row{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+input{
+  width:340px;
+  padding:16px;
+  border-radius:14px;
+  border:none;
+  font-size:1rem;
+}
+
+button{
+  border:none;
+  border-radius:14px;
+  padding:16px 22px;
+  cursor:pointer;
+  font-size:1rem;
+  font-weight:bold;
+}
+
+.search-btn{
+  background:#8fd14f;
+  color:white;
+}
+
+.open-btn{
+  background:#4b8edb;
+  color:white;
+}
+
+.save-btn{
+  background:#0b75a8;
+  color:white;
+}
+
+.section-title{
+  color:var(--muted);
+  margin-top:22px;
+  margin-bottom:10px;
+  font-size:1.1rem;
+}
+
+.option{
+  margin-bottom:12px;
+}
+
+.buttons-row{
+  margin-top:24px;
+}
+
+.status{
+  margin-top:20px;
+  color:#60a5fa;
+}
+
+/* PANELS */
+
+.side-panel{
+  background:var(--panel);
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  height:fit-content;
+}
+
+.panel-header{
+  background:#005f8f;
+  padding:16px;
+  font-weight:bold;
+  font-size:1.1rem;
+}
+
+.panel-list{
+  max-height:700px;
+  overflow:auto;
+}
+
+.stock-item{
+  padding:16px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  transition:0.2s;
+  background:var(--panel);
+}
+
+.stock-item:hover{
+  background:rgba(255,255,255,0.05);
+}
+
+body.light .stock-item:hover{
+  background:#f1f5f9;
+}
+
+.stock-left{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  cursor:pointer;
+  flex:1;
+}
+
+.stock-ticker{
+  font-weight:bold;
+}
+
+.stock-name{
+  color:var(--muted);
+  font-size:0.9rem;
+}
+
+.history-time{
+  color:#60a5fa;
+  font-size:0.8rem;
+}
+
+.history-links{
+  color:#94a3b8;
+  font-size:0.8rem;
+}
+
+.delete-btn{
+  background:#e11d2e;
+  color:white;
+  border:none;
+  border-radius:10px;
+  padding:6px 10px;
+  cursor:pointer;
+  font-size:0.8rem;
+}
+
+.empty-text{
+  padding:18px;
+  color:var(--muted);
+}
+
+.autocomplete{
+  margin-top:14px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  display:none;
+}
+
+.autocomplete-item{
+  padding:12px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+}
+
+.autocomplete-item:hover{
+  background:rgba(255,255,255,0.05);
+}
+
+body.light .autocomplete-item:hover{
+  background:#f1f5f9;
+}
+
+@media(max-width:1400px){
+
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+
+    <div class="title">
+      📊 Pro Financial Tool
+    </div>
+
+    <button class="theme-btn" id="themeBtn">
+      🌙 / ☀️
+    </button>
+
+  </div>
+
+  <div class="main-card">
+
+    <div class="layout">
+
+      <!-- LEFT -->
+
+      <div>
+
+        <div class="search-row">
+
+          <input
+            id="searchInput"
+            placeholder="2330 / 台積電 / TSMC / AAPL"
+          />
+
+          <button class="search-btn" id="searchBtn">
+            Search Selected
+          </button>
+
+          <button class="open-btn" id="openAllBtn">
+            Open All
+          </button>
+
+        </div>
+
+        <div class="autocomplete" id="autocomplete"></div>
+
+        <div class="section-title">Stock</div>
+
+        <div class="option">
+          <input type="checkbox" id="yahoo" checked>
+          Yahoo Finance
+        </div>
+
+        <div class="option">
+          <input type="checkbox" id="tradingview" checked>
+          TradingView
+        </div>
+
+        <div class="option">
+          <input type="checkbox" id="googlefinance">
+          Google Finance
+        </div>
+
+        <div class="section-title">News</div>
+
+        <div class="option">
+          <input type="checkbox" id="googlenews">
+          Google News
+        </div>
+
+        <div class="section-title">Reports</div>
+
+        <div class="option">
+          <input type="checkbox" id="wantgoo">
+          玩股網
+        </div>
+
+        <div class="option">
+          <input type="checkbox" id="goodinfo">
+          Goodinfo
+        </div>
+
+        <div class="section-title">Analysis</div>
+
+        <div class="option">
+          <input type="checkbox" id="industrychain">
+          產業價值鏈資訊平台
+        </div>
+
+        <div class="buttons-row">
+
+          <button class="save-btn" id="saveBtn">
+            ⭐ Save
+          </button>
+
+        </div>
+
+        <div class="status" id="status">
+          Loading...
+        </div>
+
+      </div>
+
+      <!-- HISTORY -->
+
+      <div class="side-panel">
+
+        <div class="panel-header">
+          🕒 Search Sessions
+        </div>
+
+        <div class="panel-list" id="historyList">
+
+          <div class="empty-text">
+            No history yet.
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- FAVORITES -->
+
+      <div class="side-panel">
+
+        <div class="panel-header">
+          ⭐ Favorite List
+        </div>
+
+        <div class="panel-list" id="favoriteList">
+
+          <div class="empty-text">
+            No favorite stocks yet.
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+// =====================================
+// GLOBAL
+// =====================================
+
+let STOCK_DB = [];
+let FAVORITES = [];
+let SEARCH_HISTORY = [];
+
+// =====================================
+// DOM
+// =====================================
+
+const input =
+  document.getElementById("searchInput");
+
+const autocomplete =
+  document.getElementById("autocomplete");
+
+const favoriteList =
+  document.getElementById("favoriteList");
+
+const historyList =
+  document.getElementById("historyList");
+
+const statusEl =
+  document.getElementById("status");
+
+// =====================================
+// LOAD STOCK DB
+// =====================================
+
+async function loadStocks(){
+
+  try{
+
+    const response =
+      await fetch("stocks.json");
+
+    STOCK_DB =
+      await response.json();
+
+    statusEl.textContent =
+      `Loaded ${STOCK_DB.length} stocks`;
+
+  }
+  catch(error){
+
+    console.error(error);
+
+    statusEl.textContent =
+      "Failed to load stocks.json";
+
+  }
+
+}
+
+// =====================================
+// HELPERS
+// =====================================
+
+function isTWStock(symbol){
+
+  return /^\d+$/.test(symbol);
+
+}
+
+function resolveStock(query){
+
+  const clean =
+    query.trim().toUpperCase();
+
+  const stock =
+    STOCK_DB.find(stock => {
+
+      return (
+
+        String(stock.ticker)
+        .includes(clean)
+
+        ||
+
+        String(stock.name)
+        .includes(query)
+
+        ||
+
+        String(stock.english_abbr || "")
+        .toUpperCase()
+        .includes(clean)
+
+      );
+
+    });
+
+  if(stock){
+
+    return {
+
+      ticker:String(stock.ticker),
+      name:stock.name,
+      isTW:true
+
+    };
+
+  }
+
+  if(isTWStock(clean)){
+
+    return {
+
+      ticker:clean,
+      name:clean,
+      isTW:true
+
+    };
+
+  }
+
+  return {
+
+    ticker:clean,
+    name:clean,
+    isTW:false
+
+  };
+
+}
+
+// =====================================
+// URLS
+// =====================================
+
+function generateLinks(stock){
+
+  const raw =
+    stock.ticker;
+
+  if(stock.isTW){
+
+    return {
+
+      yahoo:
+        `https://finance.yahoo.com/quote/${raw}.TW`,
+
+      tradingview:
+        `https://tw.tradingview.com/symbols/TWSE-${raw}/`,
+
+      googlefinance:
+        `https://www.google.com/finance/quote/${raw}:TPE`,
+
+      googlenews:
+        `https://news.google.com/search?q=${raw}`,
+
+      wantgoo:
+        `https://www.wantgoo.com/stock/${raw}`,
+
+      goodinfo:
+        `https://goodinfo.tw/tw/StockFinDetail.asp?RPT_CAT=XX_M_QUAR_ACC&STOCK_ID=${raw}`,
+
+      industrychain:
+        `https://ic.tpex.org.tw/company_chain.php?stk_code=${raw}`
+
+    };
+
+  }
+
+  return {
+
+    yahoo:
+      `https://finance.yahoo.com/quote/${raw}`,
+
+    tradingview:
+      `https://www.tradingview.com/symbols/NASDAQ-${raw}/`,
+
+    googlefinance:
+      `https://www.google.com/finance/quote/${raw}:NASDAQ`,
+
+    googlenews:
+      `https://news.google.com/search?q=${raw}`,
+
+    wantgoo:
+      `https://www.wantgoo.com/search?keyword=${raw}`,
+
+    goodinfo:"",
+    industrychain:""
+
+  };
+
+}
+
+// =====================================
+// OPEN LINKS
+// =====================================
+
+function openLinks(links){
+
+  links.forEach(link => {
+
+    window.open(
+      link.url,
+      "_blank"
+    );
+
+  });
+
+}
+
+// =====================================
+// SEARCH SESSION
+// =====================================
+
+function saveSearchSession(stock, selectedLinks){
+
+  const session = {
+
+    ticker:
+      stock.ticker,
+
+    name:
+      stock.name,
+
+    links:
+      selectedLinks,
+
+    time:
+      new Date().toLocaleTimeString()
+
+  };
+
+  SEARCH_HISTORY.unshift(session);
+
+  SEARCH_HISTORY =
+    SEARCH_HISTORY.slice(0,5);
+
+  localStorage.setItem(
+    "searchHistory",
+    JSON.stringify(SEARCH_HISTORY)
+  );
+
+  renderHistory();
+
+}
+
+function deleteHistory(index){
+
+  SEARCH_HISTORY.splice(index,1);
+
+  localStorage.setItem(
+    "searchHistory",
+    JSON.stringify(SEARCH_HISTORY)
+  );
+
+  renderHistory();
+
+}
+
+function renderHistory(){
+
+  if(SEARCH_HISTORY.length === 0){
+
+    historyList.innerHTML = `
+      <div class="empty-text">
+        No history yet.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  historyList.innerHTML = "";
+
+  SEARCH_HISTORY.forEach((session,index) => {
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "stock-item";
+
+    const linkNames =
+      session.links
+      .map(link => link.type)
+      .join(" + ");
+
+    div.innerHTML = `
+
+      <div class="stock-left">
+
+        <div class="stock-ticker">
+          ${session.ticker}
+        </div>
+
+        <div class="stock-name">
+          ${session.name}
+        </div>
+
+        <div class="history-links">
+          ${linkNames}
+        </div>
+
+        <div class="history-time">
+          ${session.time}
+        </div>
+
+      </div>
+
+      <button
+        class="delete-btn"
+        onclick="deleteHistory(${index})"
+      >
+        X
+      </button>
+
+    `;
+
+    div
+    .querySelector(".stock-left")
+    .addEventListener("click", () => {
+
+      openLinks(session.links);
+
+    });
+
+    historyList.appendChild(div);
+
+  });
+
+}
+
+// =====================================
+// SEARCH
+// =====================================
+
+function performSearch(){
+
+  const query =
+    input.value.trim();
+
+  if(!query){
+
+    alert("請輸入股票名稱");
+
+    return null;
+
+  }
+
+  const stock =
+    resolveStock(query);
+
+  const links =
+    generateLinks(stock);
+
+  const selectedLinks = [];
+
+  Object.keys(links).forEach(key => {
+
+    const checkbox =
+      document.getElementById(key);
+
+    if(
+      checkbox
+      &&
+      checkbox.checked
+      &&
+      links[key]
+    ){
+
+      selectedLinks.push({
+
+        type:key,
+        url:links[key]
+
+      });
+
+    }
+
+  });
+
+  return {
+
+    stock,
+    selectedLinks
+
+  };
+
+}
+
+// =====================================
+// OPEN SELECTED
+// =====================================
+
+function openSelected(){
+
+  const result =
+    performSearch();
+
+  if(!result){
+    return;
+  }
+
+  // 先開網站
+  openLinks(result.selectedLinks);
+
+  // 再存history
+  saveSearchSession(
+    result.stock,
+    result.selectedLinks
+  );
+
+}
+
+// =====================================
+// OPEN ALL
+// =====================================
+
+function openAll(){
+
+  document
+    .querySelectorAll('input[type="checkbox"]')
+    .forEach(c => c.checked = true);
+
+  openSelected();
+
+}
+
+// =====================================
+// FAVORITES
+// =====================================
+
+function renderFavorites(){
+
+  if(FAVORITES.length === 0){
+
+    favoriteList.innerHTML = `
+      <div class="empty-text">
+        No favorite stocks yet.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  favoriteList.innerHTML = "";
+
+  FAVORITES.forEach((stock,index) => {
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "stock-item";
+
+    div.innerHTML = `
+
+      <div class="stock-left">
+
+        <div class="stock-ticker">
+          ${stock.ticker}
+        </div>
+
+        <div class="stock-name">
+          ${stock.name}
+        </div>
+
+      </div>
+
+      <button
+        class="delete-btn"
+        onclick="deleteFavorite(${index})"
+      >
+        X
+      </button>
+
+    `;
+
+    div
+    .querySelector(".stock-left")
+    .addEventListener("click",(e)=>{
+
+      input.value =
+        stock.ticker;
+
+    });
+
+    favoriteList.appendChild(div);
+
+  });
+
+}
+
+function saveFavorite(){
+
+  const query =
+    input.value.trim();
+
+  if(!query){
+    return;
+  }
+
+  const stock =
+    resolveStock(query);
+
+  const exists =
+    FAVORITES.find(
+      s => s.ticker === stock.ticker
+    );
+
+  if(exists){
+
+    statusEl.textContent =
+      "Already saved";
+
+    return;
+
+  }
+
+  FAVORITES.unshift(stock);
+
+  localStorage.setItem(
+    "favoriteStocks",
+    JSON.stringify(FAVORITES)
+  );
+
+  renderFavorites();
+
+}
+
+function deleteFavorite(index){
+
+  FAVORITES.splice(index,1);
+
+  localStorage.setItem(
+    "favoriteStocks",
+    JSON.stringify(FAVORITES)
+  );
+
+  renderFavorites();
+
+}
+
+// =====================================
+// AUTOCOMPLETE
+// =====================================
+
+function showAutocomplete(){
+
+  const query =
+    input.value.trim().toUpperCase();
+
+  if(!query){
+
+    autocomplete.style.display =
+      "none";
+
+    return;
+
+  }
+
+  const results =
+    STOCK_DB.filter(stock => {
+
+      return (
+
+        String(stock.ticker)
+        .includes(query)
+
+        ||
+
+        String(stock.name)
+        .includes(query)
+
+        ||
+
+        String(stock.english_abbr || "")
+        .toUpperCase()
+        .includes(query)
+
+      );
+
+    }).slice(0,10);
+
+  if(results.length === 0){
+
+    autocomplete.style.display =
+      "none";
+
+    return;
+
+  }
+
+  autocomplete.innerHTML = "";
+
+  results.forEach(stock => {
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "autocomplete-item";
+
+    div.innerHTML =
+      `${stock.ticker} - ${stock.name}`;
+
+    div.addEventListener("click",()=>{
+
+      input.value =
+        stock.ticker;
+
+      autocomplete.style.display =
+        "none";
+
+    });
+
+    autocomplete.appendChild(div);
+
+  });
+
+  autocomplete.style.display =
+    "block";
+
+}
+
+// =====================================
+// THEME
+// =====================================
+
+function toggleTheme(){
+
+  document.body.classList.toggle("light");
+
+}
+
+// =====================================
+// EVENTS
+// =====================================
+
+document
+.getElementById("searchBtn")
+.addEventListener("click",openSelected);
+
+document
+.getElementById("openAllBtn")
+.addEventListener("click",openAll);
+
+document
+.getElementById("saveBtn")
+.addEventListener("click",saveFavorite);
+
+document
+.getElementById("themeBtn")
+.addEventListener("click",toggleTheme);
+
+input.addEventListener(
+  "input",
+  showAutocomplete
+);
+
+input.addEventListener(
+  "keydown",
+  e => {
+
+    if(e.key === "Enter"){
+
+      openSelected();
+
+    }
+
+  }
+);
+
+// =====================================
+// INIT
+// =====================================
+
+window.addEventListener(
+  "DOMContentLoaded",
+  async()=>{
+
+    await loadStocks();
+
+    const saved =
+      localStorage.getItem("favoriteStocks");
+
+    if(saved){
+
+      FAVORITES =
+        JSON.parse(saved);
+
+    }
+
+    const history =
+      localStorage.getItem("searchHistory");
+
+    if(history){
+
+      SEARCH_HISTORY =
+        JSON.parse(history);
+
+    }
+
+    renderFavorites();
+    renderHistory();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
